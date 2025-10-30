@@ -38,13 +38,13 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"message": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
     return jsonify({"access_token": access_token, "user": user.to_json()}), 200
 
 @app.route("/profile", methods=["GET"])
 @jwt_required()
 def profile():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
     if not user:
         return jsonify({"message": "User not found"}), 404
@@ -56,6 +56,8 @@ def profile():
 def get_users():
     users = User.query.all()
     json_users = [user.to_json() for user in users]
+    if not json_users:
+        return jsonify({"message": "User not found"}), 404
     return jsonify({"users": json_users}), 200
 
 
